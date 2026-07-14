@@ -1,6 +1,15 @@
 from pathlib import Path
 
-from WorkingContour.config import SECRET_KEY, DEBUG, PG_USER, PG_PASSWORD, PG_PORT, PG_HOST, PG_NAME, DEBUG, ALLOWED_HOSTS
+from WorkingContour.config import (
+    SECRET_KEY,
+    DEBUG,
+    PG_USER,
+    PG_PASSWORD,
+    PG_PORT,
+    PG_HOST,
+    PG_NAME,
+    ALLOWED_HOSTS
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
