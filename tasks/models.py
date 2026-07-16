@@ -16,15 +16,17 @@ class Task(models.Model):
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
+        related_name='tasks',
     )
     status = models.CharField(
         choices=TaskStatusChoices.choices,
         max_length=15,
-        default=TaskStatusChoices.TODO
+        default=TaskStatusChoices.TODO,
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='created_tasks',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

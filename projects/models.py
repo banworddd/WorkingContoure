@@ -14,11 +14,12 @@ class Project(models.Model):
     status = models.CharField(
         choices=ProjectStatusChoices.choices,
         max_length=10,
-        default=ProjectStatusChoices.ACTIVE
+        default=ProjectStatusChoices.ACTIVE,
     )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
+        related_name='projects',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
