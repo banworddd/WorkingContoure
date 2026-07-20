@@ -26,6 +26,18 @@ class TaskModelTest(TestCase):
             project=self.project,
             created_by=self.user
         )
+        self.task_done = Task.objects.create(
+            title='test_task_done',
+            project=self.project,
+            created_by=self.user,
+            status=Task.TaskStatusChoices.DONE
+        )
+        self.task_in_progress = Task.objects.create(
+            title='test_task_in_progress',
+            project=self.project,
+            created_by=self.user,
+            status=Task.TaskStatusChoices.IN_PROGRESS
+        )
 
     def test_task_creation_default(self):
         self.assertEqual(
@@ -50,3 +62,42 @@ class TaskModelTest(TestCase):
             self.task,
             self.project.tasks.all()
         )
+
+    def test_done_manager_returns_only_done_tasks(self):
+        tasks = Task.done.all()
+        self.assertIn(
+            self.task_done,
+            tasks,
+        )
+        self.assertEqual(
+            1,
+            tasks.count()
+        )
+        self.assertNotIn(
+            self.task_in_progress,
+            tasks
+        )
+        self.assertNotIn(
+            self.task,
+            tasks
+        )
+
+    def test_default_objects_manager_still_returns_all_tasks(self):
+        tasks = Task.objects.all()
+        self.assertIn(
+            self.task_done,
+            tasks,
+        )
+        self.assertIn(
+            self.task,
+            tasks,
+        )
+        self.assertIn(
+            self.task_in_progress,
+            tasks,
+        )
+        self.assertEqual(
+            tasks.count(),
+            3
+        )
+
