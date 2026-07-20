@@ -50,4 +50,3 @@ class TaskModelTest(TestCase):
             self.task,
             self.project.tasks.all()
         )
-

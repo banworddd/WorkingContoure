@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from projects.models import Project
+from .managers import TaskDoneManager
 
 
 class Task(models.Model):
@@ -31,5 +32,8 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    objects = models.Manager()
+    done = TaskDoneManager()
     def __str__(self):
         return self.title
