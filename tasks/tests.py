@@ -2,7 +2,7 @@ from django.test import TestCase
 from projects.models import Project
 from tasks.models import Task
 from django.contrib.auth import get_user_model
-
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -21,6 +21,7 @@ class TaskModelTest(TestCase):
         )
 
     def setUp(self):
+        self.deadline = timezone.now()
         self.task = Task.objects.create(
             title='test_task',
             project=self.project,
@@ -37,6 +38,19 @@ class TaskModelTest(TestCase):
             project=self.project,
             created_by=self.user,
             status=Task.TaskStatusChoices.IN_PROGRESS
+        )
+        self.task_with_deadline = Task.objects.create(
+            title='test_task_with_deadline',
+            project=self.project,
+            created_by=self.user,
+            deadline=self.deadline,
+        )
+        self.task_with_assigned_user = Task.objects.create(
+            title='test_task_with_assigned_user',
+            project=self.project,
+            created_by=self.user,
+            deadline=self.deadline,
+            assigned_to=self.user,
         )
 
     def test_task_creation_default(self):
@@ -98,6 +112,31 @@ class TaskModelTest(TestCase):
         )
         self.assertEqual(
             tasks.count(),
-            3
+            5
         )
+
+    def test_task_create_without_deadline(self):
+        self.assertIsNone(
+            self.task.deadline,
+        )
+
+    def test_task_create_and_save_with_deadline(self):
+        self.assertEqual(
+            self.task_with_deadline.deadline,
+            self.deadline,
+        )
+
+    def test_task_assigned_user_save(self):
+        self.assertEqual(
+            self.task_with_assigned_user.assigned_to,
+            self.user
+        )
+
+    def test_user_has_task_in_assigned_tasks_related_name(self):
+        self.assertIn(
+            self.task_with_assigned_user,
+            self.user.assigned_tasks.all(),
+        )
+
+
 
