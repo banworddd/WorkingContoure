@@ -44,3 +44,32 @@ class ProjectModelTest(TestCase):
             self.project,
             self.user.projects.all()
         )
+
+    def test_user_gets_only_own_projects(self):
+        user_1 = User.objects.create_user(
+            username='test_user_1',
+            password='test_password_1'
+        )
+        user_2 = User.objects.create_user(
+            username='test_user_2',
+            password='test_password_2'
+        )
+        project_1 = Project.objects.create(
+            name='test_project_1',
+            owner=user_1
+        )
+        project_2 = Project.objects.create(
+            name='test_project_2',
+            owner=user_2
+        )
+
+        first_user_projects = user_1.projects.all()
+
+        self.assertIn(
+            project_1,
+            first_user_projects,
+        )
+        self.assertNotIn(
+            project_2,
+            first_user_projects
+        )
