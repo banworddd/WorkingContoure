@@ -138,5 +138,87 @@ class TaskModelTest(TestCase):
             self.user.assigned_tasks.all(),
         )
 
+    def test_user_gets_only_assigned_tasks(self):
+        user_1 = User.objects.create_user(
+            username='test_user_1',
+            password='test_password_1'
+        )
+        user_2 = User.objects.create_user(
+            username='test_user_2',
+            password='test_password_2'
+        )
+        project_1 = Project.objects.create(
+            name='test_project_1',
+            owner=user_1
+        )
+        project_2 = Project.objects.create(
+            name='test_project_2',
+            owner=user_2
+        )
+        task_1 = Task.objects.create(
+            title='test_task_1',
+            project=project_1,
+            created_by=user_1,
+            assigned_to=user_1,
+        )
+        task_2 = Task.objects.create(
+            title='test_task_2',
+            project=project_2,
+            created_by=user_2,
+            assigned_to=user_2,
+        )
+
+        first_user_assigned_tasks = user_1.assigned_tasks.all()
+
+        self.assertIn(
+            task_1,
+            first_user_assigned_tasks,
+        )
+        self.assertNotIn(
+            task_2,
+            first_user_assigned_tasks
+        )
+
+    def test_user_gets_only_created_tasks(self):
+        user_1 = User.objects.create_user(
+            username='test_user_1',
+            password='test_password_1'
+        )
+        user_2 = User.objects.create_user(
+            username='test_user_2',
+            password='test_password_2'
+        )
+        project_1 = Project.objects.create(
+            name='test_project_1',
+            owner=user_1
+        )
+        project_2 = Project.objects.create(
+            name='test_project_2',
+            owner=user_2
+        )
+        task_1 = Task.objects.create(
+            title='test_task_1',
+            project=project_1,
+            created_by=user_1,
+            assigned_to=self.user,
+        )
+        task_2 = Task.objects.create(
+            title='test_task_2',
+            project=project_2,
+            created_by=user_2,
+            assigned_to=self.user,
+        )
+
+        first_user_created_tasks = user_1.created_tasks.all()
+
+        self.assertIn(
+            task_1,
+            first_user_created_tasks,
+        )
+        self.assertNotIn(
+            task_2,
+            first_user_created_tasks
+        )
+
 
 
