@@ -1,8 +1,11 @@
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
+
 from projects.models import Project
 from tasks.models import Task
-from django.contrib.auth import get_user_model
-from django.utils import timezone
 
 User = get_user_model()
 
@@ -79,46 +82,20 @@ class TaskModelTest(TestCase):
 
     def test_done_manager_returns_only_done_tasks(self):
         tasks = Task.done.all()
-        self.assertIn(
-            self.task_done,
-            tasks,
-        )
-        self.assertEqual(
-            1,
-            tasks.count()
-        )
-        self.assertNotIn(
-            self.task_in_progress,
-            tasks
-        )
-        self.assertNotIn(
-            self.task,
-            tasks
-        )
+        self.assertIn(self.task_done, tasks)
+        self.assertEqual(1, tasks.count())
+        self.assertNotIn(self.task_in_progress, tasks)
+        self.assertNotIn(self.task, tasks)
 
     def test_default_objects_manager_still_returns_all_tasks(self):
         tasks = Task.objects.all()
-        self.assertIn(
-            self.task_done,
-            tasks,
-        )
-        self.assertIn(
-            self.task,
-            tasks,
-        )
-        self.assertIn(
-            self.task_in_progress,
-            tasks,
-        )
-        self.assertEqual(
-            tasks.count(),
-            5
-        )
+        self.assertIn(self.task_done, tasks)
+        self.assertIn(self.task, tasks)
+        self.assertIn(self.task_in_progress, tasks)
+        self.assertEqual(tasks.count(), 5)
 
     def test_task_create_without_deadline(self):
-        self.assertIsNone(
-            self.task.deadline,
-        )
+        self.assertIsNone(self.task.deadline)
 
     def test_task_create_and_save_with_deadline(self):
         self.assertEqual(
@@ -170,14 +147,8 @@ class TaskModelTest(TestCase):
 
         first_user_assigned_tasks = user_1.assigned_tasks.all()
 
-        self.assertIn(
-            task_1,
-            first_user_assigned_tasks,
-        )
-        self.assertNotIn(
-            task_2,
-            first_user_assigned_tasks
-        )
+        self.assertIn(task_1, first_user_assigned_tasks)
+        self.assertNotIn(task_2, first_user_assigned_tasks)
 
     def test_user_gets_only_created_tasks(self):
         user_1 = User.objects.create_user(
@@ -211,14 +182,52 @@ class TaskModelTest(TestCase):
 
         first_user_created_tasks = user_1.created_tasks.all()
 
-        self.assertIn(
-            task_1,
-            first_user_created_tasks,
+        self.assertIn(task_1, first_user_created_tasks)
+        self.assertNotIn(task_2, first_user_created_tasks)
+
+    def test_expired_task_selection(self):
+        task_is_expired = Task.objects.create(
+            title='task_is_expired',
+            project=self.project,
+            created_by=self.user,
+            deadline=timezone.now() - timedelta(days=1),
+            status=Task.TaskStatusChoices.TODO
         )
-        self.assertNotIn(
-            task_2,
-            first_user_created_tasks
+        expired_tasks = Task.objects.filter(
+            deadline__isnull=False,
+            deadline__lt=timezone.now(),
+        ).exclude(
+            status=Task.TaskStatusChoices.DONE
         )
+        self.assertIn(task_is_expired, expired_tasks)
 
+    def test_done_task_is_not_expired(self):
+        done_task = Task.objects.create(
+            title='done_task',
+            project=self.project,
+            created_by=self.user,
+            deadline=timezone.now() - timedelta(days=1),
+            status=Task.TaskStatusChoices.DONE
+        )
+        expired_tasks = Task.objects.filter(
+            deadline__isnull=False,
+            deadline__lt=timezone.now(),
+        ).exclude(
+            status=Task.TaskStatusChoices.DONE
+        )
+        self.assertNotIn(done_task, expired_tasks)
 
-
+    def test_task_without_deadline_not_in_overdue(self):
+        task_without_deadline = Task.objects.create(
+            title='task_without_deadline',
+            project=self.project,
+            created_by=self.user,
+            status=Task.TaskStatusChoices.TODO
+        )
+        expired_tasks = Task.objects.filter(
+            deadline__isnull=False,
+            deadline__lt=timezone.now(),
+        ).exclude(
+            status=Task.TaskStatusChoices.DONE
+        )
+        self.assertNotIn(task_without_deadline, expired_tasks)
